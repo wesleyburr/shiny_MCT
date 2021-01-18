@@ -1,0 +1,252 @@
+---
+title: "Full Comprehensive Report"
+date: "June 18, 2018"
+output:
+  pdf_document:
+    highlight: zenburn
+    latex_engine: lualatex
+  html_document: default
+mainfont: Arial
+params: 
+  examinfo: NA
+  infotable: NA 
+  invalid_key: NA
+  difficulty_indices: NA 
+  psumm: NA
+  phist: NA
+  r_prime_values: NA
+  r_primesumm: NA 
+  r_prime_compare_values: NA
+  r_primehist: NA 
+  r_primeless1: NA
+  pnotbetween39: NA 
+  nonfunctionaldistractors: NA 
+  cron_alpha: NA 
+  worst_5_questions: NA
+  new_cron_alpha: NA 
+  exceptional_questions: NA
+---
+
+# Information about your test
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+library(kableExtra)
+kable(params$infotable, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+```
+
+
+```{r, echo = FALSE}
+if (!is.null(params$invalid_key)) {
+  sometext <- strsplit(params$invalid_key, " ")[[1]]
+  text_formatted <- paste(
+    text_spec(sometext, "latex", color = "red",
+    font_size = 14),
+    collapse = " ")
+} else {
+  text_formatted <- ""
+}
+```
+
+`r text_formatted`
+
+# Introduction
+
+This report provides an in-depth analysis of your multiple choice test. This analysis is based off of current psychometric literature, and provides recommendations based on this literature. This report will help you understand which questions on your multiple choice test should be modified (or even removed, if you feel you are unable to modify the question).
+
+# Difficulty Indices
+
+The difficulty index of a question is represented by the letter $p$. It is the proportion of students who answered the question correctly, and thus is a measure of how "easy" or "hard" the question was for your students. For example, if your exam had 75 students and 53 of them answered question 12 correctly, then $p_{12} = \frac{53}{75} \approx 0.71$
+
+Here are the difficulty indices for each of the questions on your test, along with some summary statistics and a histogram: 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+library(ggplot2)
+kable(params$difficulty_indices, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+kable(params$psumm, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+params$phist
+```
+
+## Recommended Range for Difficulty Indices
+ 
+Ideally, you don't want any of your questions to be too difficult or too easy. Current literature suggests that difficulty indices should be somewhere in the range of 0.3 to 0.9. If the difficulty index of a question is lower than 0.3, it means that less than 30% of your students answered it correctly, and it was therefore a very difficult question. If the difficulty index of a question is higher than 0.9, it means that more than 90% of your students answered that question correctly, and it was therefore a very easy question. 
+
+Although many instructors like to throw a few "giveaway" questions and a few "impossible" questions on every test, you should consider using this analysis to modify any questions which do not fall in the recommended range. You may also notice that questions you did not intend to make too hard or too easy turned out to be too hard or too easy. 
+
+Here are the questions on your test where the difficulty indices did NOT fall in the recommended range: 
+
+```{r pnotbetween39, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+pnotbetween39printgood <- NULL
+if (nrow(params$pnotbetween39) == 0) {
+  pnotbetween39print <- "None of your questions had difficulty indices that fell outside of the recommended range! Great work."
+  pnotbetween39printgood <- text_spec(pnotbetween39print, "latex", color = "#014421")
+  showtext <- TRUE
+} else {
+ df <- params$pnotbetween39
+ df <- df %>% 
+        mutate(
+          "Question" = cell_spec(Question, "latex", background = ifelse(hard == "Too Easy", "#9CE08B", "#E09C8B")),
+          "p" = cell_spec(p, "latex", background = ifelse(hard == "Too Easy", "#9CE08B", "#E09C8B")),
+          "hard" = cell_spec(hard, "latex", background = ifelse(hard == "Too Easy", "#9CE08B", "#E09C8B"))) %>%
+        select(Question, p, hard)
+      colnames(df) <- c("Question", "Difficulty Index", "This question was...")
+      rownames(df) <- NULL
+
+ pnotbetween39print <- kable(df, "latex", booktabs = TRUE, linesep = "", escape = FALSE) %>%
+   kable_styling(position = "center")
+ showtable <- TRUE
+}
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+pnotbetween39print
+```
+
+`r pnotbetween39printgood`
+
+# Discrimination Coefficients 
+
+The discrimination coefficient measures how well a question discriminates the stronger students from the weaker students. The value of a discrimination coefficient can range from -1 to +1, where the best possible value is +1 (stronger students are more likely to get the question correct than weaker students are), and the worst possible value is -1 (weaker students are more likely to get the question correct than stronger students are).
+
+Consider two students, Alice and Bob. Let's say that the test was 100 questions, and Alice's overall score was a 46%, while Bob's was a 95%. Let's say that Alice got question 8 incorrect, and Bob got question 8 correct. Obviously there would be more than 2 students writing the test, but you can
+see in this simple example how question 8 could be considered "good", since the stronger student got the question correct, while the weaker student got the question incorrect. A question that does a good job of separating the strong students from the weaker students has a high discrimination coefficient (a value close to +1). 
+
+On the other hand, consider instead if Bob had gotten question 8 incorrect, while Alice got it correct. This would be bad, because it means that the weaker student was more likely to get question 8 correct than the stronger student was. In this case, question 8 would have a negative value for the discrimination coefficient. This is often an indication that the question was worded poorly, or maybe even that the "correct" answer was incorrect. Any questions which have negative discrimination coefficients should be reviewed, and either reworded or removed from future iterations of the test.
+
+Here are the discrimination coefficients for your test, along with some summary statistics and a histogram: 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+kable(params$r_prime_values, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+kable(params$r_primesumm, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+params$r_primehist
+```
+
+## Flagged Questions Based on Discrimination Coefficients 
+
+We've flagged any questions that had a discrimination coefficient lower than +0.10. You should remove (or at least reword) the following questions in future iterations of this test:  
+
+```{r rprimeless1, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+rprimeless1good <- NULL 
+if (nrow(params$r_primeless1) != 0) {
+  rprimeless1 <- kable(params$r_primeless1, "latex", booktabs = TRUE) %>%
+    kable_styling(position = "center")
+  showtable <- TRUE 
+} else {
+  rprimeless1 <- "None of the questions on your test had discrimination coefficients lower than +0.10. Great work!"
+  rprimeless1good <- text_spec(rprimeless1, "latex", color = "#014421")
+  showtext <- TRUE 
+}
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+rprimeless1
+```
+
+`r rprimeless1good` 
+
+# Distractors 
+
+On any multiple choice question, there is the "keyed" option (the correct answer), and there are distractors (the remaining options, all of which are the incorrect choices). For a distractor to be effective, it should "distract" students from choosing the correct option. A distractor is considered "functional" if at least 3% of the students chose the distractor.
+
+Whenever a question has a non-functional distractor, the instructor should either 1) reword/change any non-functional distractors in such a way that it will turn those options into functional distractors or 2) remove the distractor from the question oe 3) remove the entire question from the test entirely.
+
+A benefit to removing any non-functional distractors from a question in future iterations of a test is that students will no longer have to spend as much time reading the question, and will have more time to actually answer the questions on the test. For example, consider the multiple choice question: "Who is the 23rd Prime Minister of Canada? A: Stephen Harper, B: Justin Trudeau, C: Winnie the Pooh Bear". No students would choose option C, so keeping option C on the test simply forces the student to spend more time reading the question instead of answering it. By removing all non-functional distractors from your test, students will have much more time to answer the questions at hand, and there may even be enough time to add additional questions to the test to further assess the students' knowledge. 
+
+Here is a list of questions on your test which had non-functional distractors: 
+
+```{r nonfunctional, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+nonfunctionalgood <- NULL 
+if (nrow(params$nonfunctionaldistractors) == 0) {
+  nonfunctional <- "None of your questions had non-functional distractors. Great work!"
+  nonfunctionalgood <- text_spec(nonfunctional, "latex", color = "#014421")
+  showtext <- TRUE
+} else {
+  nonfunctional <- kable(params$nonfunctionaldistractors, "latex", booktabs = TRUE) %>%
+    kable_styling(position = "center")
+  showtable <- TRUE
+}
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+nonfunctional
+```
+
+`r nonfunctionalgood` 
+
+# Reliability 
+
+The reliability of a test is usually represented by $\alpha$. Its value can range from 0 to 1, where 1 means most reliable. It should be noted, though, that increasing the number of questions on a test will *always* increase the reliability of the test; this means that $\alpha$ should not necessarily be interpreted directly, but should perhaps be interpreted by comparing different iterations of the same test. 
+
+## Recommended Ranges for Reliability 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE }
+df <- data.frame("Reliability" = c("0.55 - 0.65", "0.65 - 0.8", "0.8 - 0.9", "0.9 - 1.0"), 
+                 "Description" = c("Adequate for a midterm exam or term test/quiz", "Adequate for a final exam",
+                                   "Excellent for a final exam or term test/quiz", "Standardized test level exam"))
+rownames(df) <- NULL
+kable(df, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+```
+
+The reliability of your test, currently, is `r params$cron_alpha`. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+shownewreliability <- FALSE
+newreliabilitystring <- NULL
+newreliabilitystring2 <- NULL
+if (params$new_cron_alpha > params$cron_alpha) {
+  shownewreliability <- TRUE
+} 
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, eval = shownewreliability}
+newreliabilitystring <- "Often, removing questions with low discrimination coefficients from your test can greatly improve the reliability of your test. Here are the 5 questions on your test with the lowest discrimination coefficients:"
+```
+
+`r newreliabilitystring`
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, eval = shownewreliability}
+kable(params$worst_5_questions, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+newreliabilitystring2 <- paste("If you were to simply remove these 5 questions from your test altogether, the reliability of your test would have been ", params$new_cron_alpha, ".", sep = "")
+```
+
+`r newreliabilitystring2` 
+
+# Exceptional Questions 
+
+Any questions which have a discrimination coefficient of +0.40 or higher are considered to be exceptional questions. Here are the questions on your test which met or surpassed this threshold: 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+exceptionalbad <- NULL 
+if (nrow(params$exceptional_questions) == 0) {
+  exceptional <- "Unfortunately, none of your questions had a discrimination coefficient of +0.40 or higher. Try rewording some of your questions in future iterations of your test, and hopefully you will be able to meet this threshold eventually. Don't feel bad -- this is an extremely difficult threshold to reach!"
+  exceptionalbad <- text_spec(exceptionalbad, "latex", color = "red")
+  showtext <- TRUE
+  exceptional
+} else {
+  exceptional <- kable(params$exceptional_questions, "latex", booktabs = TRUE) %>%
+    kable_styling(position = "center")
+  showtable <- TRUE
+}
+```
+
+`r exceptionalbad`
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+exceptional
+```

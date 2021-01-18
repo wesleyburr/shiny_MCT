@@ -1,0 +1,219 @@
+---
+title: "Partial Comprehensive Report"
+date: "June 18, 2018"
+output:
+  pdf_document:
+    highlight: zenburn
+    latex_engine: lualatex
+  html_document: default
+mainfont: Arial
+params: 
+  examinfo: NA
+  infotable: NA 
+  invalid_key: NA
+  difficulty_indices: NA 
+  psumm: NA
+  phist: NA
+  r_prime_values: NA
+  r_primesumm: NA 
+  r_prime_compare_values: NA 
+  r_primehist: NA 
+  r_primeless1: NA
+  pnotbetween39: NA 
+  nonfunctionaldistractors: NA 
+  cron_alpha: NA 
+  worst_5_questions: NA
+  new_cron_alpha: NA 
+  exceptional_questions: NA
+---
+
+# Information about your test
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+library(kableExtra)
+kable(params$infotable, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+```
+
+
+```{r, echo = FALSE}
+if (!is.null(params$invalid_key)) {
+  sometext <- strsplit(params$invalid_key, " ")[[1]]
+  text_formatted <- paste(
+    text_spec(sometext, "latex", color = "red",
+    font_size = 14),
+    collapse = " ")
+} else {
+  text_formatted <- ""
+}
+```
+
+`r text_formatted`
+
+# Difficulty Indices
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(knitr)
+library(ggplot2)
+kable(params$difficulty_indices, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+kable(params$psumm, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+params$phist
+```
+
+## Recommended Range for Difficulty Indices (<0.3 or >0.9)
+ 
+Here are the questions on your test where the difficulty indices did NOT fall in the recommended range: 
+
+```{r pnotbetween39, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+pnotbetween39printgood <- NULL
+if (nrow(params$pnotbetween39) == 0) {
+  pnotbetween39print <- "None of your questions had difficulty indices that fell outside of the recommended range! Great work."
+  pnotbetween39printgood <- text_spec(pnotbetween39print, "latex", color = "#014421")
+  showtext <- TRUE
+} else {
+ df <- params$pnotbetween39
+ df <- df %>% 
+        mutate(
+          "Question" = cell_spec(Question, "latex", background = ifelse(hard == "Too Easy", "#9CE08B", "#E09C8B")),
+          "p" = cell_spec(p, "latex", background = ifelse(hard == "Too Easy", "#9CE08B", "#E09C8B")),
+          "hard" = cell_spec(hard, "latex", background = ifelse(hard == "Too Easy", "#9CE08B", "#E09C8B"))) %>%
+        select(Question, p, hard)
+      colnames(df) <- c("Question", "Difficulty Index", "This question was...")
+      rownames(df) <- NULL
+
+ pnotbetween39print <- kable(df, "latex", booktabs = TRUE, linesep = "", escape = FALSE) %>%
+   kable_styling(position = "center")
+ showtable <- TRUE
+}
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+pnotbetween39print
+```
+
+`r pnotbetween39printgood`
+
+# Discrimination Coefficients 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+kable(params$r_prime_values, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+kable(params$r_primesumm, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+params$r_primehist
+```
+
+## Flagged Questions Based on Discrimination Coefficients (< +0.10)
+
+```{r rprimeless1, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+rprimeless1good <- NULL 
+if (nrow(params$r_primeless1) != 0) {
+  rprimeless1 <- kable(params$r_primeless1, "latex", booktabs = TRUE) %>%
+    kable_styling(position = "center")
+  showtable <- TRUE 
+} else {
+  rprimeless1 <- "None of the questions on your test had discrimination coefficients lower than +0.10. Great work!"
+  rprimeless1good <- text_spec(rprimeless1, "latex", color = "#014421")
+  showtext <- TRUE 
+}
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+rprimeless1
+```
+
+`r rprimeless1good` 
+
+# Non-Functional Distractors (< 3% of students chose distractor)
+
+Here is a list of questions on your test which had non-functional distractors: 
+
+```{r nonfunctional, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+nonfunctionalgood <- NULL 
+if (nrow(params$nonfunctionaldistractors) == 0) {
+  nonfunctional <- "None of your questions had non-functional distractors. Great work!"
+  nonfunctionalgood <- text_spec(nonfunctional, "latex", color = "#014421")
+  showtext <- TRUE
+} else {
+  nonfunctional <- kable(params$nonfunctionaldistractors, "latex", booktabs = TRUE) %>%
+    kable_styling(position = "center")
+  showtable <- TRUE
+}
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+nonfunctional
+```
+
+`r nonfunctionalgood` 
+
+# Reliability 
+
+## Recommended Ranges for Reliability 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE }
+df <- data.frame("Reliability" = c("0.55 - 0.65", "0.65 - 0.8", "0.8 - 0.9", "0.9 - 1.0"), 
+                 "Description" = c("Adequate for a midterm exam or term test/quiz", "Adequate for a final exam",
+                                   "Excellent for a final exam or term test/quiz", "Standardized test level exam"))
+rownames(df) <- NULL
+kable(df, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+```
+
+The reliability of your test, currently, is `r params$cron_alpha`. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+shownewreliability <- FALSE
+newreliabilitystring <- NULL
+newreliabilitystring2 <- NULL
+if (params$new_cron_alpha > params$cron_alpha) {
+  shownewreliability <- TRUE
+} 
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, eval = shownewreliability}
+newreliabilitystring <- "Often, removing questions with low discrimination coefficients from your test can greatly improve the reliability of your test. Here are the 5 questions on your test with the lowest discrimination coefficients:"
+```
+
+`r newreliabilitystring`
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, eval = shownewreliability}
+kable(params$worst_5_questions, "latex", booktabs = TRUE) %>%
+  kable_styling(position = "center")
+newreliabilitystring2 <- paste("If you were to simply remove these 5 questions from your test altogether, the reliability of your test would have been ", params$new_cron_alpha, ".", sep = "")
+```
+
+`r newreliabilitystring2` 
+
+# Exceptional Questions (Discrimination Coefficient +0.40 or higher)
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+showtext <- FALSE
+showtable <- FALSE
+exceptionalbad <- NULL 
+if (nrow(params$exceptional_questions) == 0) {
+  exceptional <- "Unfortunately, none of your questions had a discrimination coefficient of +0.40 or higher. Try rewording some of your questions in future iterations of your test, and hopefully you will be able to meet this threshold eventually. Don't feel bad -- this is an extremely difficult threshold to reach!"
+  exceptionalbad <- text_spec(exceptionalbad, "latex", color = "red")
+  showtext <- TRUE
+  exceptional
+} else {
+  exceptional <- kable(params$exceptional_questions, "latex", booktabs = TRUE) %>%
+    kable_styling(position = "center")
+  showtable <- TRUE
+}
+```
+
+`r exceptionalbad`
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = "asis", eval = showtable}
+exceptional
+```
